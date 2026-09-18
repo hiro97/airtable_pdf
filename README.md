@@ -64,6 +64,15 @@ await fetch(serverUrl, {
 });
 ```
 
+### 💡 [추천] 에어테이블 버튼(Button) 필드로 원클릭 PDF 생성 (자동화 횟수 소모 X)
+복잡한 Automation 스크립트 설정 없이, 에어테이블의 **Button** 필드로 즉시 연동할 수 있습니다.
+1. 새 필드 추가 → 타입: **Button**
+2. Action: **Open URL** 선택
+3. URL Formula 입력:
+   - **급여명세서**: `"https://your-domain.com/generate/payslip?record_id=" & RECORD_ID()`
+   - **발주서**: `"https://your-domain.com/generate/po?record_id=" & RECORD_ID()`
+4. 버튼을 클릭하면 브라우저 창에서 진행 상태가 표시된 후 3초 뒤 자동 닫히며, 지정된 첨부파일 필드(예: `Paystub`, `PO Created`)에 PDF가 자동 업로드됩니다.
+
 ---
 
 ## 🧩 3. 나중에 새로운 PDF 문서 추가하는 방법 (Extending New PDFs)

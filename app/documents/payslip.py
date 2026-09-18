@@ -200,16 +200,16 @@ class PayslipGenerator(BaseDocumentGenerator):
         record = self.table.get(record_id)
         fields = record.get("fields", {})
 
-        # Find attachment field candidates: '급여명세서', '명세서', 'PDF', '첨부파일', 'Attachment'
+        # Find attachment field candidates: 'Paystub', '급여명세서', '명세서', 'PDF', '첨부파일', 'Attachment'
         att_field_name = None
-        for cand in ["급여명세서", "명세서", "PDF", "첨부파일", "Attachment", "Files", "급여 명세서"]:
+        for cand in ["Paystub", "paystub", "급여명세서", "명세서", "PDF", "첨부파일", "Attachment", "Files", "급여 명세서"]:
             if cand in fields or cand.lower() in [k.lower() for k in fields.keys()]:
                 att_field_name = cand
                 break
 
         # Fallback to first existing attachment or default
         if not att_field_name:
-            att_field_name = "급여명세서"
+            att_field_name = "Paystub"
 
         # Find checkbox field candidates: 'PDF 생성', '생성', 'Generate PDF', 'Create PDF'
         checkbox_field_name = None

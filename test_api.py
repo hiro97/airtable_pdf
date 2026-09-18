@@ -38,8 +38,28 @@ def test_webhook_endpoints():
     assert res3.status_code == 404
     print("Webhook endpoint checks passed!")
 
+def test_get_generate_endpoints():
+    # Test GET missing record_id
+    res1 = client.get("/generate/payslip")
+    assert res1.status_code == 400
+    assert "Record ID 누락" in res1.text
+
+    # Test GET with record_id (HTML response)
+    res2 = client.get("/generate/payslip?record_id=recTest123")
+    assert res2.status_code == 200
+    assert "급여명세서" in res2.text
+    assert "recTest123" in res2.text
+
+    # Test GET with format=json
+    res3 = client.get("/generate/payslip?record_id=recTest123&format=json")
+    assert res3.status_code == 202
+    assert res3.json()["status"] == "accepted"
+    print("GET generate endpoint checks passed!")
+
 if __name__ == "__main__":
     test_health()
     test_download_file()
     test_webhook_endpoints()
+    test_get_generate_endpoints()
     print("All multi-document API tests passed successfully!")
+
