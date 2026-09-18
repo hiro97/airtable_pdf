@@ -205,11 +205,12 @@ class PurchaseOrderGenerator(BaseDocumentGenerator):
             # Reset checkbox 'Create PO'
             settings.FIELD_CHECKBOX: False
         }
-        if settings.FIELD_STATUS:
+        if settings.FIELD_STATUS and settings.FIELD_STATUS.strip():
             try:
-                # Check if Status field exists, update if present
-                update_payload[settings.FIELD_STATUS] = "Issued"
-            except Exception:
-                pass
+                payload_with_status = dict(update_payload)
+                payload_with_status[settings.FIELD_STATUS.strip()] = "Issued"
+                return self.po_table.update(record_id, payload_with_status)
+            except Exception as e:
+                logger.warning(f"Failed to update optional status field '{settings.FIELD_STATUS}': {e}. Retrying without status field.")
 
         return self.po_table.update(record_id, update_payload)

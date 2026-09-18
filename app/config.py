@@ -32,10 +32,9 @@ class Settings(BaseSettings):
     PO_TABLE_NAME: str = Field(default="PO Created", description="부모 발주서 테이블 이름")
     ITEMS_TABLE_NAME: str = Field(default="작업내역", description="자식 작업내역/에피소드 테이블 이름")
 
-    # Parent Table Field Names
     FIELD_CHECKBOX: str = Field(default="Create PO", description="발주서 생성 체크박스 필드명 (Create PO)")
     FIELD_ATTACHMENT: str = Field(default="PO Created", description="생성된 PDF를 저장할 첨부파일 필드")
-    FIELD_STATUS: str = Field(default="Status", description="발주서 상태 필드 (옵션)")
+    FIELD_STATUS: str = Field(default="", description="발주서 상태 필드 (옵션, 빈 문자열이면 업데이트 생략)")
     FIELD_ITEMS_LINK: str = Field(default="작업내역", description="자식 레코드 링크 필드명")
     FIELD_LINGUIST_NAME: str = Field(default="Linguist", description="번역가 이름 필드")
     FIELD_LINGUIST_POSITION: str = Field(default="Linguist Position", description="직무/포지션 (Linguist Position 또는 Position)")

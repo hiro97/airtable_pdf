@@ -59,7 +59,8 @@ async def process_document_workflow(doc_type: str, record_id: str):
         )
 
         # 3. Construct public download URL
-        file_url = f"{settings.BASE_URL.rstrip('/')}/files/download/{filename}"
+        import urllib.parse
+        file_url = f"{settings.BASE_URL.rstrip('/')}/files/download/{urllib.parse.quote(filename)}"
         logger.info(f"PDF generated successfully: {file_url}")
 
         # 4. Sync back to Airtable
