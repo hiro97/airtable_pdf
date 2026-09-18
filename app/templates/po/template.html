@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ po_code }}</title>
+  <style>
+    {{ inline_css | safe }}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo-container">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 46" style="height: 38px;" fill="none">
+          <g fill="#111111">
+            <path d="M0 7.5 L24 7.5 L15.5 19.5 L0 19.5 Z" />
+            <path d="M12 21.5 L36 21.5 L27.5 33.5 L3.5 33.5 Z" />
+          </g>
+          <text x="44" y="32" font-family="'Pretendard', 'Noto Sans KR', sans-serif" font-weight="900" font-size="34" letter-spacing="-1.5" fill="#111111">ZOO</text>
+        </svg>
+      </div>
+      <div class="title-container">
+        <h1 class="doc-title">PURCHASE ORDER</h1>
+        <div class="po-code">{{ po_code }}</div>
+      </div>
+    </header>
+
+    <!-- Details Cards -->
+    <section class="cards-row">
+      <!-- Contractor Details -->
+      <div class="card">
+        <h2 class="card-title">CONTRACTOR DETAILS</h2>
+        <div class="card-item">
+          <span class="label">Linguist:</span>
+          <span class="value">{{ contractor.linguist or '-' }}</span>
+        </div>
+        <div class="card-item">
+          <span class="label">Position:</span>
+          <span class="value">{{ contractor.position or '-' }}</span>
+        </div>
+        <div class="card-item">
+          <span class="label">Email:</span>
+          <span class="value">{{ contractor.email or '-' }}</span>
+        </div>
+      </div>
+
+      <!-- Order Details -->
+      <div class="card">
+        <h2 class="card-title">ORDER DETAILS</h2>
+        <div class="card-item">
+          <span class="label">Date Issued:</span>
+          <span class="value">{{ order.date_issued or '-' }}</span>
+        </div>
+        <div class="card-item">
+          <span class="label">Deadline Month:</span>
+          <span class="value">{{ order.deadline_month or '-' }}</span>
+        </div>
+        <div class="card-item">
+          <span class="label">Payment Status:</span>
+          <span class="value">{{ order.payment_status or '' }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Items Table -->
+    <section class="table-container">
+      <table class="items-table">
+        <thead>
+          <tr>
+            <th class="col-no">NO.</th>
+            <th class="col-desc">PROJECT DESCRIPTION / SERIES<br><span style="font-weight: 500; font-size: 8.5px; color: #555;">EPISODE</span></th>
+            <th class="col-deadline">DEADLINE</th>
+            <th class="col-role">ROLE</th>
+            <th class="col-rate text-right">FINAL RATE</th>
+            <th class="col-runtime text-center">RUNTIME</th>
+            <th class="col-amount text-right">AMOUNT</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+          <tr>
+            <td class="col-no text-center">{{ item.no }}</td>
+            <td class="col-desc">
+              <div class="project-title">{{ item.project_name }}</div>
+              {% if item.episode %}
+              <div class="episode-title">{{ item.episode }}</div>
+              {% endif %}
+            </td>
+            <td class="col-deadline">{{ item.deadline }}</td>
+            <td class="col-role">{{ item.role }}</td>
+            <td class="col-rate text-right">{{ item.rate_formatted }}</td>
+            <td class="col-runtime text-center">{{ item.runtime }}</td>
+            <td class="col-amount text-right">{{ item.amount_formatted }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Bottom Section: Remark & Summary -->
+    <section class="bottom-section">
+      <div class="remark-box">
+        <h3 class="remark-title">REMARK / PAYMENT INSTRUCTIONS</h3>
+        <p class="remark-desc">
+          {{ remark or "The payment will be automatically remitted to your registered bank account on the pre-scheduled payment date." }}
+        </p>
+      </div>
+
+      <div class="summary-box">
+        <div class="summary-line">
+          <span class="label">Subtotal Month:</span>
+          <span class="value">{{ summary.subtotal_formatted }}</span>
+        </div>
+        <div class="summary-line tax-line">
+          <span class="label">Linguist Tax (3.3%):</span>
+          <span class="value">{{ summary.tax_formatted }}</span>
+        </div>
+        <div class="summary-line">
+          <span class="label">Real Total:</span>
+          <span class="value">{{ summary.real_total_formatted }}</span>
+        </div>
+        
+        <div class="double-line"></div>
+
+        <div class="grand-total-line">
+          <span class="label">GRAND TOTAL:</span>
+          <span class="value">{{ summary.grand_total_formatted }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer class="footer-section">
+      <div class="footer-company">{{ company_name or "ZOO DIGITAL KOREA" }}</div>
+      <p class="footer-notice">
+        {{ footer_notice or "If you have any questions regarding this Purchase Order, please contact support at your designated coordinator email. Please check that your details and project records match before accepting payments." }}
+      </p>
+    </footer>
+  </div>
+</body>
+</html>

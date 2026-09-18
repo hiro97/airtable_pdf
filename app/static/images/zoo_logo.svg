@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 46" fill="none">
+  <!-- ZOO Brand Symbol -->
+  <g fill="#111111">
+    <!-- Top slash -->
+    <path d="M0 7.5 L24 7.5 L15.5 19.5 L0 19.5 Z" />
+    <!-- Bottom slash -->
+    <path d="M12 21.5 L36 21.5 L27.5 33.5 L3.5 33.5 Z" />
+  </g>
+  <!-- ZOO Typography -->
+  <text x="44" y="32" font-family="'Pretendard', 'Noto Sans KR', 'Inter', -apple-system, sans-serif" font-weight="900" font-size="34" letter-spacing="-1.5" fill="#111111">ZOO</text>
+</svg>

@@ -1,0 +1,310 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+@page {
+  size: A4 portrait;
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Noto Sans KR", system-ui, Roboto, sans-serif;
+  color: #1a1a1a;
+  background-color: #ffffff;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.page {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 20mm 18mm 16mm 18mm;
+  margin: 0 auto;
+  position: relative;
+  background: white;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 24px;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+}
+
+.logo-img {
+  height: 38px;
+}
+
+.title-container {
+  text-align: right;
+}
+
+.doc-title {
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: #111111;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.po-code {
+  font-size: 11px;
+  color: #4a4a4a;
+  font-weight: 500;
+}
+
+/* Details Cards */
+.cards-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.card {
+  border: 1px solid #e2e4e8;
+  border-radius: 8px;
+  padding: 14px 16px;
+  background-color: #ffffff;
+}
+
+.card-title {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #111111;
+  letter-spacing: 0.3px;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+.card-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 7px;
+  font-size: 11px;
+}
+
+.card-item:last-child {
+  margin-bottom: 0;
+}
+
+.card-item .label {
+  color: #666666;
+  font-weight: 400;
+}
+
+.card-item .value {
+  color: #111111;
+  font-weight: 700;
+  text-align: right;
+}
+
+/* Items Table */
+.table-container {
+  margin-bottom: 24px;
+  flex-grow: 1;
+}
+
+.items-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10.5px;
+}
+
+.items-table th {
+  border-top: 1.5px solid #222222;
+  border-bottom: 1px solid #222222;
+  padding: 8px 6px;
+  text-align: left;
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #111111;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+}
+
+.items-table td {
+  padding: 9px 6px;
+  border-bottom: 1px solid #edf0f2;
+  vertical-align: middle;
+}
+
+.items-table tr:last-child td {
+  border-bottom: 1.5px solid #222222;
+}
+
+.col-no {
+  width: 5%;
+  text-align: center;
+  color: #333333;
+}
+
+.col-desc {
+  width: 37%;
+}
+
+.project-title {
+  font-weight: 700;
+  color: #111111;
+  font-size: 11px;
+  margin-bottom: 2px;
+}
+
+.episode-title {
+  color: #666666;
+  font-size: 10px;
+}
+
+.col-deadline {
+  width: 13%;
+  color: #333333;
+}
+
+.col-role {
+  width: 9%;
+  color: #333333;
+}
+
+.col-rate {
+  width: 12%;
+  text-align: right;
+  font-weight: 500;
+  color: #222222;
+}
+
+.col-runtime {
+  width: 10%;
+  text-align: center;
+  color: #333333;
+}
+
+.col-amount {
+  width: 14%;
+  text-align: right;
+  font-weight: 700;
+  color: #111111;
+}
+
+.text-right {
+  text-align: right !important;
+}
+
+.text-center {
+  text-align: center !important;
+}
+
+/* Bottom Section: Remark & Summary */
+.bottom-section {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 24px;
+  margin-bottom: 30px;
+}
+
+.remark-box {
+  padding-right: 12px;
+}
+
+.remark-title {
+  font-size: 11px;
+  font-weight: 800;
+  color: #111111;
+  letter-spacing: 0.3px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.remark-desc {
+  font-size: 10px;
+  color: #444444;
+  line-height: 1.5;
+}
+
+.summary-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 11px;
+}
+
+.summary-line .label {
+  color: #555555;
+  font-weight: 500;
+}
+
+.summary-line .value {
+  font-weight: 700;
+  color: #111111;
+}
+
+.tax-line .value {
+  color: #d32f2f;
+}
+
+.double-line {
+  border-top: 3px double #111111;
+  margin: 6px 0 8px 0;
+}
+
+.grand-total-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.grand-total-line .label {
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.4px;
+  color: #111111;
+}
+
+.grand-total-line .value {
+  font-size: 14px;
+  font-weight: 900;
+  color: #111111;
+}
+
+/* Footer Section */
+.footer-section {
+  border-top: 1px solid #edf0f2;
+  padding-top: 14px;
+  margin-top: auto;
+}
+
+.footer-company {
+  font-size: 11px;
+  font-weight: 800;
+  color: #111111;
+  margin-bottom: 4px;
+  letter-spacing: 0.2px;
+}
+
+.footer-notice {
+  font-size: 9.5px;
+  color: #666666;
+  line-height: 1.45;
+}
