@@ -1,6 +1,7 @@
 import re
 import logging
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
+from concurrent.futures import ThreadPoolExecutor
 from pyairtable import Api
 from app.config import settings
 from app.documents.base import BaseDocumentGenerator
@@ -40,31 +41,41 @@ class PurchaseOrderGenerator(BaseDocumentGenerator):
 
     def fetch_data(self, record_id: str) -> Dict[str, Any]:
         """Fetch 1:N PO and Episodes data from Airtable"""
-        if not self.po_table or not self.items_table:
+        if not self.po_table:
             raise ValueError("Airtable client is not configured. Check AIRTABLE_API_KEY and AIRTABLE_BASE_ID.")
 
         parent_record = self.po_table.get(record_id)
         fields = parent_record.get("fields", {})
 
-        # Primary PO title/name (e.g. ZOO Korea_김애정_2026-07)
+        # Primary PO title/name (e.g. ZOO Korea_서승희_2026-08)
         po_name = self._extract_text(fields.get("Name", ""))
         linguist = self._extract_text(fields.get(settings.FIELD_LINGUIST_NAME, ""))
         
         # Position fallback
         position = (
             self._extract_text(fields.get(settings.FIELD_LINGUIST_POSITION))
-            or self._extract_text(fields.get("Position", "SDH"))
+            or self._extract_text(fields.get("Position", "영상번역작가, 감수작가"))
         )
         email = self._extract_text(fields.get(settings.FIELD_LINGUIST_EMAIL, ""))
-        date_issued = self._extract_text(fields.get(settings.FIELD_DATE_ISSUED, ""))
-        deadline_month = self._extract_text(fields.get(settings.FIELD_DEADLINE_MONTH, ""))
-        payment_status = self._extract_text(fields.get(settings.FIELD_PAYMENT_STATUS, ""))
+        date_issued = (
+            self._extract_text(fields.get(settings.FIELD_DATE_ISSUED))
+            or self._extract_text(fields.get("Created Time"))
+            or "-"
+        )
+        deadline_month = (
+            self._extract_text(fields.get(settings.FIELD_DEADLINE_MONTH))
+            or "-"
+        )
+        payment_status = (
+            self._extract_text(fields.get(settings.FIELD_PAYMENT_STATUS))
+            or self._extract_text(fields.get("Wired?"))
+            or "-"
+        )
 
         # If po_name exists in Name column, use it directly
         if po_name:
             po_code = po_name
-            # Try parsing deadline month from Name if not directly provided (e.g. ZOO Korea_김애정_2026-07 -> 2026-07)
-            if not deadline_month:
+            if deadline_month == "-":
                 match = re.search(r'\d{4}-\d{2}', po_name)
                 if match:
                     deadline_month = match.group(0)
@@ -73,11 +84,21 @@ class PurchaseOrderGenerator(BaseDocumentGenerator):
                 if len(parts) >= 2:
                     linguist = parts[1]
         else:
-            po_code = f"ZOO Korea_{linguist}_{deadline_month}" if linguist and deadline_month else f"PO_{record_id}"
+            po_code = f"ZOO Korea_{linguist}_{deadline_month}" if linguist and deadline_month != "-" else f"PO_{record_id}"
 
-        # Find linked items (support '작업내역', 'Episodes', 'Line Items')
+        # 1. Determine Child Table (support 'Payment From 2021 Table_id', settings, or table name)
+        child_table_id = (
+            fields.get("Payment From 2021 Table_id")
+            or settings.ITEMS_TABLE_NAME
+            or "tblENorlfOStFcHBH"
+            or "Payment From 2021"
+        )
+        child_table = self.api.table(settings.AIRTABLE_BASE_ID, child_table_id) if self.api else self.items_table
+
+        # 2. Find linked items (support 'Payment From 2021', '작업내역', 'Episodes', 'Line Items')
         item_ids = (
-            fields.get(settings.FIELD_ITEMS_LINK)
+            fields.get("Payment From 2021")
+            or fields.get(settings.FIELD_ITEMS_LINK)
             or fields.get("작업내역")
             or fields.get("Episodes")
             or fields.get("Line Items")
@@ -86,17 +107,31 @@ class PurchaseOrderGenerator(BaseDocumentGenerator):
         if not isinstance(item_ids, list):
             item_ids = [item_ids] if item_ids else []
 
+        # 3. Parallel fetch child records for fast response
+        child_records: List[Optional[Dict[str, Any]]] = []
+        if child_table and item_ids:
+            def _fetch_child(i_id: str):
+                try:
+                    return child_table.get(i_id)
+                except Exception as e:
+                    logger.error(f"Error fetching child record {i_id}: {e}")
+                    return None
+
+            with ThreadPoolExecutor(max_workers=8) as executor:
+                child_records = list(executor.map(_fetch_child, item_ids))
+
         items: List[Dict[str, Any]] = []
         subtotal = 0
 
-        for idx, item_id in enumerate(item_ids, start=1):
+        for idx, child_rec in enumerate([c for c in child_records if c], start=1):
             try:
-                child_rec = self.items_table.get(item_id)
                 child_fields = child_rec.get("fields", {})
 
                 project = (
-                    self._extract_text(child_fields.get(settings.ITEM_FIELD_PROJECT))
+                    self._extract_text(child_fields.get("Series Title"))
+                    or self._extract_text(child_fields.get(settings.ITEM_FIELD_PROJECT))
                     or self._extract_text(child_fields.get("Series"))
+                    or self._extract_text(child_fields.get("Series_Episode"))
                     or self._extract_text(child_fields.get("프로젝트"))
                     or self._extract_text(child_fields.get("작품명"))
                     or self._extract_text(child_fields.get("Name"))
@@ -107,18 +142,23 @@ class PurchaseOrderGenerator(BaseDocumentGenerator):
                 )
                 deadline = (
                     self._extract_text(child_fields.get(settings.ITEM_FIELD_DEADLINE))
+                    or self._extract_text(child_fields.get("Deadline per project"))
                     or self._extract_text(child_fields.get("마감일"))
+                    or self._extract_text(child_fields.get("감수마감"))
+                    or self._extract_text(child_fields.get("교열마감"))
                 )
                 role = (
-                    self._extract_text(child_fields.get(settings.ITEM_FIELD_ROLE))
+                    self._extract_text(child_fields.get("Role Type"))
+                    or self._extract_text(child_fields.get(settings.ITEM_FIELD_ROLE))
+                    or self._extract_text(child_fields.get("Linguist Role"))
                     or self._extract_text(child_fields.get("역할"))
                     or "TRS"
                 )
 
-                rate = float(child_fields.get(settings.ITEM_FIELD_RATE, 0) or child_fields.get("단가", 0) or 0)
-                runtime = float(child_fields.get(settings.ITEM_FIELD_RUNTIME, 0) or child_fields.get("러닝타임", 0) or 0)
+                rate = float(child_fields.get(settings.ITEM_FIELD_RATE, 0) or child_fields.get("Final Rate", 0) or child_fields.get("단가", 0) or 0)
+                runtime = float(child_fields.get(settings.ITEM_FIELD_RUNTIME, 0) or child_fields.get("Runtime", 0) or child_fields.get("러닝타임", 0) or 0)
 
-                raw_amount = child_fields.get(settings.ITEM_FIELD_AMOUNT) or child_fields.get("금액")
+                raw_amount = child_fields.get(settings.ITEM_FIELD_AMOUNT) or child_fields.get("Amount") or child_fields.get("금액")
                 if raw_amount is not None and raw_amount != "":
                     amount = float(str(raw_amount).replace("₩", "").replace(",", "").strip())
                 else:
@@ -138,10 +178,10 @@ class PurchaseOrderGenerator(BaseDocumentGenerator):
                     "amount": amount
                 })
             except Exception as e:
-                logger.error(f"Error fetching child record {item_id}: {e}")
+                logger.error(f"Error parsing child record {child_rec.get('id')}: {e}")
 
         # If subtotal from child items is 0, check parent "Total For Month"
-        parent_total = fields.get("Total For Month")
+        parent_total = fields.get("Total For Month") or fields.get("Manual Total (When Rate Change is Planned)")
         if subtotal == 0 and parent_total:
             try:
                 subtotal = float(str(parent_total).replace("₩", "").replace(",", "").strip())
@@ -149,8 +189,8 @@ class PurchaseOrderGenerator(BaseDocumentGenerator):
                 pass
 
         # Freelancer 3.3% Tax calculation
-        parent_tax = fields.get("Real Tax")
-        if parent_tax:
+        parent_tax = fields.get("Real Tax") or fields.get("Linguist Tax (3.3%)")
+        if parent_tax is not None:
             try:
                 tax = int(round(float(str(parent_tax).replace("₩", "").replace(",", "").strip())))
             except Exception:
@@ -158,7 +198,14 @@ class PurchaseOrderGenerator(BaseDocumentGenerator):
         else:
             tax = int(round(subtotal * 0.033))
 
-        real_total = int(subtotal - tax)
+        parent_real_total = fields.get("Real Total") or fields.get("Total After Tax")
+        if parent_real_total is not None:
+            try:
+                real_total = int(round(float(str(parent_real_total).replace("₩", "").replace(",", "").strip())))
+            except Exception:
+                real_total = int(subtotal - tax)
+        else:
+            real_total = int(subtotal - tax)
 
         return {
             "record_id": record_id,
