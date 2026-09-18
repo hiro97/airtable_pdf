@@ -9,6 +9,7 @@ def test_health():
     data = response.json()
     assert data["status"] == "healthy"
     assert "po" in data["supported_documents"]
+    assert "payslip" in data["supported_documents"]
     print("Health check passed, supported docs:", data["supported_documents"])
 
 def test_download_file():
@@ -22,6 +23,11 @@ def test_webhook_endpoints():
     res1 = client.post("/webhook/po", json={})
     assert res1.status_code == 400
     assert "Missing record_id" in res1.json()["detail"]
+
+    # Test payslip webhook missing body
+    res_payslip = client.post("/webhook/payslip", json={})
+    assert res_payslip.status_code == 400
+    assert "Missing record_id" in res_payslip.json()["detail"]
 
     # Test legacy po webhook
     res2 = client.post("/webhook/generate-po", json={})

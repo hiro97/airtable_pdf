@@ -106,7 +106,8 @@ async def main():
         template_filename=po_gen.template_name,
         css_filename=po_gen.css_name,
         data=MOCK_DATA,
-        output_filename=output_filename
+        output_filename=output_filename,
+        screenshot_filename="preview_page-1.png"
     )
     print(f"Success! Generated PDF at: {pdf_path}")
 

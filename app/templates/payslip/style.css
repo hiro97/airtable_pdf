@@ -32,17 +32,16 @@ body {
   color: #000000;
 }
 
-.font-semibold {
-  font-weight: 600;
-  color: #111111;
-}
-
 .text-right {
   text-align: right !important;
 }
 
 .text-center {
   text-align: center !important;
+}
+
+.text-empty {
+  color: #aaaaaa;
 }
 
 .page {
@@ -57,15 +56,7 @@ body {
 }
 
 /* Page Break Controls */
-.header, .meta-grid, .bottom-section, .footer {
-  page-break-inside: avoid;
-}
-
-.items-table thead {
-  display: table-header-group;
-}
-
-.items-table tbody tr {
+.header, .emp-grid, .net-pay-section, .footer {
   page-break-inside: avoid;
 }
 
@@ -102,11 +93,20 @@ body {
 
 .doc-title {
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 900;
   letter-spacing: -0.02em;
   color: #000000;
   line-height: 1;
-  margin-bottom: 5px;
+  margin-bottom: 3px;
+}
+
+.doc-subtitle {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #777777;
+  text-transform: uppercase;
+  margin-bottom: 6px;
 }
 
 .doc-meta-row {
@@ -127,7 +127,7 @@ body {
   font-weight: 700;
   color: #888888;
   font-size: 8.5px;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
 }
 
 .meta-value {
@@ -141,231 +141,173 @@ body {
   font-size: 9px;
 }
 
-/* Rules / Lines */
+/* Hairline Rules */
 .rule-solid-thick {
   border-top: 1.5px solid #111111;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 
 .rule-solid-thin {
   border-top: 1px solid #e2e4e8;
-  margin-bottom: 22px;
+  margin-bottom: 20px;
 }
 
-/* Metadata Grid (3-column editorial layout) */
-.meta-grid {
+/* Employee & Banking Grid (3 Columns x 2 Rows) */
+.emp-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 28px;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 
-.col-heading {
-  font-size: 8.5px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  color: #777777;
-  text-transform: uppercase;
-  margin-bottom: 10px;
-  border-bottom: 0.5px solid #eaeaea;
-  padding-bottom: 4px;
+.grid-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .meta-item {
-  margin-bottom: 8px;
-}
-
-.meta-item:last-child {
-  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .item-label {
   font-size: 8px;
   color: #777777;
-  font-weight: 500;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  margin-bottom: 1px;
+  margin-bottom: 2px;
 }
 
 .item-value {
   font-size: 11px;
   color: #222222;
   font-weight: 500;
-  word-break: break-all;
 }
 
-/* Items Table */
-.table-container {
+/* Salary Tables 2-Column Container */
+.salary-tables-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
   margin-bottom: 0;
 }
 
-.items-table {
+.salary-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.salary-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 10px;
 }
 
-.items-table thead th {
+.salary-table thead th {
   border-top: 1.5px solid #111111;
   border-bottom: 1px solid #111111;
-  padding: 8px 6px;
+  padding: 8px 4px;
   font-size: 8.5px;
   font-weight: 800;
-  color: #222222;
+  color: #111111;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
+  text-align: left;
 }
 
-.items-table tbody td {
-  padding: 10px 6px;
+.salary-table tbody td {
+  padding: 8px 4px;
   border-bottom: 1px solid #eeeeee;
   vertical-align: baseline;
   font-size: 10px;
   color: #222222;
 }
 
-.items-table tbody tr:last-child td {
-  border-bottom: 1px solid #111111;
+.item-title {
+  font-weight: 500;
+  color: #111111;
 }
 
-.col-no {
-  width: 5%;
-  color: #888888;
-  font-size: 9.5px;
-}
-
-.col-desc {
-  width: 39%;
-}
-
-.project-title {
-  font-weight: 600;
-  color: #000000;
-  font-size: 10.5px;
-  margin-right: 6px;
-}
-
-.episode-title {
-  font-weight: 400;
+.item-note {
+  font-size: 8.5px;
   color: #666666;
-  font-size: 9.5px;
+  margin-left: 4px;
 }
 
-.col-deadline {
-  width: 13%;
-  color: #555555;
+.col-item-name {
+  width: 60%;
 }
 
-.col-role {
-  width: 8%;
-  color: #444444;
+.col-item-amount {
+  width: 40%;
 }
 
-.col-rate {
-  width: 12%;
-  color: #444444;
-}
-
-.col-runtime {
-  width: 9%;
-  color: #444444;
-}
-
-.col-amount {
-  width: 14%;
-  color: #000000;
+.salary-table tfoot .total-row td {
+  border-top: 1px solid #111111;
+  border-bottom: 1.5px solid #111111;
+  padding: 9px 4px;
   font-size: 10.5px;
+  color: #000000;
+  background-color: transparent;
 }
 
-/* Dynamic layout spacer */
+/* Page Spacer */
 .page-spacer {
   flex-grow: 1;
-  min-height: 24px;
+  min-height: 20px;
 }
 
-/* Bottom Section: Terms & Financial Summary */
-.bottom-section {
-  display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 36px;
-  align-items: flex-start;
-  margin-bottom: 24px;
-}
-
-.terms-heading {
-  font-size: 8.5px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  color: #777777;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-
-.terms-text {
-  font-size: 9.5px;
-  color: #444444;
-  line-height: 1.55;
-  margin-bottom: 8px;
-}
-
-.terms-subtext {
-  font-size: 8.5px;
-  color: #888888;
-  line-height: 1.5;
-}
-
-/* Summary Block */
-.summary-block {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.summary-line {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  font-size: 10.5px;
-  padding: 1px 0;
-}
-
-.summary-label {
-  color: #666666;
-  font-weight: 500;
-}
-
-.summary-val {
-  color: #111111;
-  font-weight: 600;
-}
-
-.tax-val {
-  color: #444444;
-}
-
-/* Grand Total: Swiss Double Rule */
-.grand-total-line {
+/* Net Pay Section (Classic Swiss Double Rule) */
+.net-pay-section {
   border-top: 1.5px solid #111111;
   border-bottom: 3px double #111111;
-  margin-top: 8px;
-  padding: 8px 0 6px 0;
+  padding: 10px 0 8px 0;
+  margin-top: 6px;
+  margin-bottom: 20px;
+}
+
+.net-pay-inner {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
 }
 
-.grand-total-label {
-  font-size: 11px;
+.net-pay-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.net-pay-title {
+  font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: -0.01em;
   color: #000000;
+}
+
+.net-pay-desc {
+  font-size: 8.5px;
+  color: #777777;
+  margin-top: 2px;
+}
+
+.net-pay-right {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.net-pay-label {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #888888;
   text-transform: uppercase;
 }
 
-.grand-total-val {
-  font-size: 17px;
-  font-weight: 800;
+.net-pay-amount {
+  font-size: 19px;
+  font-weight: 900;
   letter-spacing: -0.02em;
   color: #000000;
 }
@@ -375,22 +317,54 @@ body {
   margin-top: auto;
 }
 
-.footer-rule {
-  border-top: 0.5px solid #e0e0e0;
-  margin-bottom: 8px;
+.footer-notices {
+  margin-bottom: 12px;
 }
 
-.footer-content {
+.notice-line {
+  font-size: 8px;
+  color: #666666;
+  line-height: 1.5;
+}
+
+.footer-divider {
+  border-top: 0.5px solid #e0e0e0;
+  margin-bottom: 10px;
+}
+
+.footer-bottom {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.footer-company {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.corp-name {
+  font-size: 10px;
+  font-weight: 800;
+  color: #111111;
+  letter-spacing: 0.02em;
+}
+
+.corp-sub {
   font-size: 8px;
   color: #888888;
-  letter-spacing: 0.03em;
+  font-weight: 600;
 }
 
-.footer-sep {
-  margin: 0 6px;
-  color: #dddddd;
+.footer-seal-box {
+  border: 0.5px solid #cbd5e1;
+  padding: 2px 6px;
+  border-radius: 2px;
 }
 
+.seal-text {
+  font-size: 7.5px;
+  color: #666666;
+  letter-spacing: 0.05em;
+}

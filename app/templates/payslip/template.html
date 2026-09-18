@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>급여명세서_{{ name }}_{{ period }}</title>
+  <style>
+    {{ inline_css | safe }}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 40" class="logo-svg" fill="none">
+          <g fill="#111111">
+            <path d="M0 4 L22 4 L14 17 L0 17 Z" />
+            <path d="M11 19 L33 19 L25 32 L3 32 Z" />
+          </g>
+          <text x="40" y="29" font-family="'Pretendard', sans-serif" font-weight="900" font-size="30" letter-spacing="-1.2" fill="#111111">ZOO</text>
+        </svg>
+        <div class="brand-sub">ZOO DIGITAL KOREA</div>
+      </div>
+
+      <div class="doc-title-block">
+        <h1 class="doc-title">급여명세서</h1>
+        <div class="doc-subtitle">PAYSLIP / SALARY STATEMENT</div>
+        <div class="doc-meta-row">
+          <span class="meta-field"><span class="meta-label">귀속월</span> <span class="meta-value">{{ period }}</span></span>
+          <span class="meta-separator">/</span>
+          <span class="meta-field"><span class="meta-label">지급일자</span> <span class="meta-value">{{ payment_date }}</span></span>
+        </div>
+      </div>
+    </header>
+
+    <div class="rule-solid-thick"></div>
+
+    <!-- Employee & Account Grid (3 Columns x 2 Rows) -->
+    <section class="emp-grid">
+      <div class="grid-col">
+        <div class="meta-item">
+          <div class="item-label">성명 (NAME)</div>
+          <div class="item-value font-bold">{{ name or '-' }}</div>
+        </div>
+        <div class="meta-item">
+          <div class="item-label">직급 (POSITION)</div>
+          <div class="item-value">{{ position or '-' }}</div>
+        </div>
+      </div>
+
+      <div class="grid-col">
+        <div class="meta-item">
+          <div class="item-label">주민등록번호 (RESIDENT ID)</div>
+          <div class="item-value font-tabular">{{ resident_id or '-' }}</div>
+        </div>
+        <div class="meta-item">
+          <div class="item-label">지급은행 (BANK)</div>
+          <div class="item-value">{{ bank or '-' }}</div>
+        </div>
+      </div>
+
+      <div class="grid-col">
+        <div class="meta-item">
+          <div class="item-label">부서 (DEPARTMENT)</div>
+          <div class="item-value font-bold">{{ department or '-' }}</div>
+        </div>
+        <div class="meta-item">
+          <div class="item-label">계좌번호 (ACCOUNT NO.)</div>
+          <div class="item-value font-tabular">{{ account_no or '-' }}</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="rule-solid-thin"></div>
+
+    <!-- Earnings & Deductions 2-Column Tables -->
+    <section class="salary-tables-container">
+      <!-- Left: Earnings Table -->
+      <div class="salary-col">
+        <table class="salary-table">
+          <thead>
+            <tr>
+              <th class="col-item-name">지급 항목 (EARNINGS)</th>
+              <th class="col-item-amount text-right">금액 (AMOUNT)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in earnings %}
+            <tr {% if not item.name %}class="row-empty"{% endif %}>
+              <td class="col-item-name">
+                {% if item.name %}
+                  <span class="item-title">{{ item.name }}</span>
+                  {% if item.note %}
+                  <span class="item-note">({{ item.note }})</span>
+                  {% endif %}
+                {% else %}
+                  <span class="empty-placeholder">&nbsp;</span>
+                {% endif %}
+              </td>
+              <td class="col-item-amount text-right font-tabular">
+                {% if item.amount_formatted %}
+                  {{ item.amount_formatted }}
+                {% elif item.name %}
+                  <span class="text-empty">-</span>
+                {% else %}
+                  <span class="empty-placeholder">&nbsp;</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr class="total-row">
+              <td class="col-item-name font-bold">지급합계 (TOTAL EARNINGS)</td>
+              <td class="col-item-amount text-right font-bold font-tabular">{{ total_earnings_formatted }}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- Right: Deductions Table -->
+      <div class="salary-col">
+        <table class="salary-table">
+          <thead>
+            <tr>
+              <th class="col-item-name">공제 항목 (DEDUCTIONS)</th>
+              <th class="col-item-amount text-right">금액 (AMOUNT)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in deductions %}
+            <tr>
+              <td class="col-item-name">
+                <span class="item-title">{{ item.name }}</span>
+                {% if item.note %}
+                <span class="item-note">({{ item.note }})</span>
+                {% endif %}
+              </td>
+              <td class="col-item-amount text-right font-tabular">
+                {% if item.amount_formatted %}
+                  {{ item.amount_formatted }}
+                {% else %}
+                  <span class="text-empty">-</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr class="total-row">
+              <td class="col-item-name font-bold">공제합계 (TOTAL DEDUCTIONS)</td>
+              <td class="col-item-amount text-right font-bold font-tabular">{{ total_deductions_formatted }}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </section>
+
+    <!-- Dynamic layout spacer -->
+    <div class="page-spacer"></div>
+
+    <!-- Net Pay Section (Classic Swiss Double Rule) -->
+    <section class="net-pay-section">
+      <div class="net-pay-inner">
+        <div class="net-pay-left">
+          <div class="net-pay-title">실수령액 (차인지급액)</div>
+          <div class="net-pay-desc">지급합계에서 공제합계를 차감한 실제 입금액입니다.</div>
+        </div>
+        <div class="net-pay-right">
+          <span class="net-pay-label">NET PAYABLE</span>
+          <span class="net-pay-amount font-tabular">{{ net_pay_formatted }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer class="footer">
+      <div class="footer-notices">
+        <p class="notice-line">1. 귀하의 노고에 감사드립니다. 본 명세서의 내역에 의문이 있으시면 경영지원팀으로 문의 바랍니다.</p>
+        <p class="notice-line">2. 급여 내역은 개인 정보이므로 타인에게 공개되지 않도록 주의하여 주시기 바랍니다.</p>
+      </div>
+      <div class="footer-divider"></div>
+      <div class="footer-bottom">
+        <div class="footer-company">
+          <span class="corp-name">{{ company_name or "주식회사 주코리아" }}</span>
+          <span class="corp-sub">ZOO KOREA INC.</span>
+        </div>
+        <div class="footer-seal-box">
+          <span class="seal-text">직인생략</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

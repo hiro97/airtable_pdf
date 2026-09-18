@@ -45,7 +45,8 @@ class PDFEngine:
         css_filename: str,
         data: dict,
         output_filename: str,
-        page_format: str = "A4"
+        page_format: str = "A4",
+        screenshot_filename: str | None = None
     ) -> Path:
         """Render HTML and convert to PDF via Playwright Headless Chromium"""
         html_content = self.render_html(template_subpath, template_filename, css_filename, data)
@@ -60,10 +61,18 @@ class PDFEngine:
                     "--font-render-hinting=none"
                 ]
             )
-            context = await browser.new_context()
+            context = await browser.new_context(
+                viewport={"width": 794, "height": 1123},
+                device_scale_factor=2
+            )
             page = await context.new_page()
 
             await page.set_content(html_content, wait_until="networkidle")
+
+            if screenshot_filename:
+                screenshot_path = self.storage_dir / screenshot_filename
+                await page.screenshot(path=str(screenshot_path), full_page=True)
+                logger.info(f"Generated preview screenshot: {screenshot_path}")
 
             await page.pdf(
                 path=str(output_path),
