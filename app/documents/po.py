@@ -46,14 +46,43 @@ class PurchaseOrderGenerator(BaseDocumentGenerator):
         parent_record = self.po_table.get(record_id)
         fields = parent_record.get("fields", {})
 
+        # Primary PO title/name (e.g. ZOO Korea_김애정_2026-07)
+        po_name = self._extract_text(fields.get("Name", ""))
         linguist = self._extract_text(fields.get(settings.FIELD_LINGUIST_NAME, ""))
-        position = self._extract_text(fields.get(settings.FIELD_LINGUIST_POSITION, "SDH"))
+        
+        # Position fallback
+        position = (
+            self._extract_text(fields.get(settings.FIELD_LINGUIST_POSITION))
+            or self._extract_text(fields.get("Position", "SDH"))
+        )
         email = self._extract_text(fields.get(settings.FIELD_LINGUIST_EMAIL, ""))
         date_issued = self._extract_text(fields.get(settings.FIELD_DATE_ISSUED, ""))
         deadline_month = self._extract_text(fields.get(settings.FIELD_DEADLINE_MONTH, ""))
         payment_status = self._extract_text(fields.get(settings.FIELD_PAYMENT_STATUS, ""))
 
-        item_ids = fields.get(settings.FIELD_ITEMS_LINK, [])
+        # If po_name exists in Name column, use it directly
+        if po_name:
+            po_code = po_name
+            # Try parsing deadline month from Name if not directly provided (e.g. ZOO Korea_김애정_2026-07 -> 2026-07)
+            if not deadline_month:
+                match = re.search(r'\d{4}-\d{2}', po_name)
+                if match:
+                    deadline_month = match.group(0)
+            if not linguist:
+                parts = po_name.split("_")
+                if len(parts) >= 2:
+                    linguist = parts[1]
+        else:
+            po_code = f"ZOO Korea_{linguist}_{deadline_month}" if linguist and deadline_month else f"PO_{record_id}"
+
+        # Find linked items (support '작업내역', 'Episodes', 'Line Items')
+        item_ids = (
+            fields.get(settings.FIELD_ITEMS_LINK)
+            or fields.get("작업내역")
+            or fields.get("Episodes")
+            or fields.get("Line Items")
+            or []
+        )
         if not isinstance(item_ids, list):
             item_ids = [item_ids] if item_ids else []
 
@@ -65,17 +94,33 @@ class PurchaseOrderGenerator(BaseDocumentGenerator):
                 child_rec = self.items_table.get(item_id)
                 child_fields = child_rec.get("fields", {})
 
-                project = self._extract_text(child_fields.get(settings.ITEM_FIELD_PROJECT, ""))
-                episode = self._extract_text(child_fields.get(settings.ITEM_FIELD_EPISODE, ""))
-                deadline = self._extract_text(child_fields.get(settings.ITEM_FIELD_DEADLINE, ""))
-                role = self._extract_text(child_fields.get(settings.ITEM_FIELD_ROLE, "TRS"))
+                project = (
+                    self._extract_text(child_fields.get(settings.ITEM_FIELD_PROJECT))
+                    or self._extract_text(child_fields.get("Series"))
+                    or self._extract_text(child_fields.get("프로젝트"))
+                    or self._extract_text(child_fields.get("작품명"))
+                    or self._extract_text(child_fields.get("Name"))
+                )
+                episode = (
+                    self._extract_text(child_fields.get(settings.ITEM_FIELD_EPISODE))
+                    or self._extract_text(child_fields.get("에피소드"))
+                )
+                deadline = (
+                    self._extract_text(child_fields.get(settings.ITEM_FIELD_DEADLINE))
+                    or self._extract_text(child_fields.get("마감일"))
+                )
+                role = (
+                    self._extract_text(child_fields.get(settings.ITEM_FIELD_ROLE))
+                    or self._extract_text(child_fields.get("역할"))
+                    or "TRS"
+                )
 
-                rate = float(child_fields.get(settings.ITEM_FIELD_RATE, 0) or 0)
-                runtime = float(child_fields.get(settings.ITEM_FIELD_RUNTIME, 0) or 0)
+                rate = float(child_fields.get(settings.ITEM_FIELD_RATE, 0) or child_fields.get("단가", 0) or 0)
+                runtime = float(child_fields.get(settings.ITEM_FIELD_RUNTIME, 0) or child_fields.get("러닝타임", 0) or 0)
 
-                raw_amount = child_fields.get(settings.ITEM_FIELD_AMOUNT)
+                raw_amount = child_fields.get(settings.ITEM_FIELD_AMOUNT) or child_fields.get("금액")
                 if raw_amount is not None and raw_amount != "":
-                    amount = float(raw_amount)
+                    amount = float(str(raw_amount).replace("₩", "").replace(",", "").strip())
                 else:
                     amount = rate * runtime
 
@@ -95,10 +140,25 @@ class PurchaseOrderGenerator(BaseDocumentGenerator):
             except Exception as e:
                 logger.error(f"Error fetching child record {item_id}: {e}")
 
+        # If subtotal from child items is 0, check parent "Total For Month"
+        parent_total = fields.get("Total For Month")
+        if subtotal == 0 and parent_total:
+            try:
+                subtotal = float(str(parent_total).replace("₩", "").replace(",", "").strip())
+            except Exception:
+                pass
+
         # Freelancer 3.3% Tax calculation
-        tax = int(round(subtotal * 0.033))
+        parent_tax = fields.get("Real Tax")
+        if parent_tax:
+            try:
+                tax = int(round(float(str(parent_tax).replace("₩", "").replace(",", "").strip())))
+            except Exception:
+                tax = int(round(subtotal * 0.033))
+        else:
+            tax = int(round(subtotal * 0.033))
+
         real_total = int(subtotal - tax)
-        po_code = f"ZOO Korea_{linguist}_{deadline_month}" if linguist and deadline_month else f"PO_{record_id}"
 
         return {
             "record_id": record_id,
@@ -131,7 +191,7 @@ class PurchaseOrderGenerator(BaseDocumentGenerator):
         return f"{clean}.pdf"
 
     def update_airtable_attachment(self, record_id: str, file_url: str, filename: str) -> Dict[str, Any]:
-        """Update PO Created attachment field and reset trigger checkbox"""
+        """Update PO Created attachment field and reset trigger checkbox (Create PO)"""
         if not self.po_table:
             raise ValueError("Airtable client is not configured.")
 
@@ -142,9 +202,14 @@ class PurchaseOrderGenerator(BaseDocumentGenerator):
                     "filename": filename
                 }
             ],
+            # Reset checkbox 'Create PO'
             settings.FIELD_CHECKBOX: False
         }
         if settings.FIELD_STATUS:
-            update_payload[settings.FIELD_STATUS] = "Issued"
+            try:
+                # Check if Status field exists, update if present
+                update_payload[settings.FIELD_STATUS] = "Issued"
+            except Exception:
+                pass
 
         return self.po_table.update(record_id, update_payload)
