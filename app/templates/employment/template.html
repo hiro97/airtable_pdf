@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>재직증명서_{{ name }}</title>
+  <style>
+    {{ inline_css | safe }}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="frame">
+      <svg class="watermark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34 34" aria-hidden="true">
+        <path d="M0 4 L22 4 L14 17 L0 17 Z" />
+        <path d="M11 19 L33 19 L25 32 L3 32 Z" />
+      </svg>
+
+      <header class="header">
+        <div class="brand">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 40" class="logo-svg" fill="none">
+            <g fill="#111111">
+              <path d="M0 4 L22 4 L14 17 L0 17 Z" />
+              <path d="M11 19 L33 19 L25 32 L3 32 Z" />
+            </g>
+            <text x="40" y="29" font-family="'Pretendard', sans-serif" font-weight="900" font-size="30" letter-spacing="-1.2" fill="#111111">ZOO</text>
+          </svg>
+          <div class="brand-sub">ZOO DIGITAL KOREA</div>
+        </div>
+        <div class="doc-meta">
+          <div class="doc-meta-label">No.</div>
+          <div class="doc-meta-value font-tabular">{{ doc_no }}</div>
+        </div>
+      </header>
+
+      <section class="title-block">
+        <div class="eyebrow">Certificate of Employment</div>
+        <h1 class="doc-title">재직증명서</h1>
+        <div class="title-rule"><span></span></div>
+      </section>
+
+      <section class="info">
+        <div class="info-group">
+          <div class="group-head">
+            <span class="group-index">01</span>
+            <span class="group-name">인적사항</span>
+            <span class="group-en">Personal Information</span>
+          </div>
+          <dl class="rows">
+            <div class="row">
+              <dt>성명<small>Name</small></dt>
+              <dd class="strong">{{ name }}{% if english_name and english_name != name %}<span class="sub">{{ english_name }}</span>{% endif %}</dd>
+            </div>
+            <div class="row">
+              <dt>주민등록번호<small>Resident No.</small></dt>
+              <dd class="font-tabular">{{ resident_id }}</dd>
+            </div>
+            <div class="row">
+              <dt>주소<small>Address</small></dt>
+              <dd>{{ address }}</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="info-group">
+          <div class="group-head">
+            <span class="group-index">02</span>
+            <span class="group-name">재직사항</span>
+            <span class="group-en">Employment Details</span>
+          </div>
+          <dl class="rows">
+            <div class="row">
+              <dt>회사명<small>Company</small></dt>
+              <dd>{{ company_name }}</dd>
+            </div>
+            <div class="row">
+              <dt>소속<small>Department</small></dt>
+              <dd>{{ department }}</dd>
+            </div>
+            <div class="row">
+              <dt>직위<small>Position</small></dt>
+              <dd>{{ position }}</dd>
+            </div>
+            <div class="row">
+              <dt>재직기간<small>Period</small></dt>
+              <dd class="font-tabular">{{ employment_period }}</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <section class="statement">
+        <p>위 사람은 당사에 {% if is_resigned %}재직하였음{% else %}재직하고 있음{% endif %}을 증명합니다.</p>
+        <div class="issue-date font-tabular">{{ issue_date }}</div>
+      </section>
+
+      <footer class="issuer">
+        <div class="issuer-company">{{ company_name }}</div>
+        <div class="issuer-sign">
+          <span class="ceo-title">대표이사</span>
+          <span class="ceo-name">{{ company_ceo }}</span>
+          <span class="seal-slot">
+            <span class="seal-mark">(인)</span>
+            {% if seal_image %}<img class="seal-img" src="{{ seal_image }}" alt="">{% endif %}
+          </span>
+        </div>
+        <div class="issuer-meta">
+          <span>사업자등록번호 <b class="font-tabular">{{ company_biz_no }}</b></span>
+          <span class="dot"></span>
+          <span>{{ company_address }}</span>
+        </div>
+      </footer>
+    </div>
+  </div>
+</body>
+</html>

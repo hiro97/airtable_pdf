@@ -202,8 +202,15 @@ async def generate_document_get(
     doc_name_map = {
         "payslip": "급여명세서",
         "po": "발주서 (PO)",
+        "employment": "재직증명서",
+    }
+    attachment_field_map = {
+        "payslip": "Paystub",
+        "po": "PO Created",
+        "employment": "Signed Agreement",
     }
     doc_display = doc_name_map.get(doc_type, doc_type.upper())
+    attachment_field = attachment_field_map.get(doc_type, "첨부파일")
 
     # Return friendly HTML page that closes itself
     html_content = f"""
@@ -307,7 +314,7 @@ async def generate_document_get(
                 데이터를 읽어 PDF를 제작하고 있습니다.
             </p>
             <p style="font-size:0.9rem; color:#475569;">
-                잠시 후 <strong>Paystub</strong> 필드에 파일이 자동 첨부됩니다.
+                잠시 후 <strong>{attachment_field}</strong> 필드에 파일이 자동 첨부됩니다.
             </p>
             <button class="close-btn" onclick="window.close()">창 닫기</button>
             <div class="countdown" id="cd">3초 후 자동으로 창이 닫힙니다...</div>

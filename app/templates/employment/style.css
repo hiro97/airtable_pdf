@@ -1,0 +1,354 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700;900&family=Cormorant+Garamond:ital,wght@1,500&display=swap');
+
+@page {
+  size: A4 portrait;
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --ink: #141414;
+  --body: #2b2b2b;
+  --muted: #8a8a8a;
+  --hair: #dcdad5;
+  --accent: #9c7a3c;
+  --serif: "Noto Serif KR", "Noto Serif CJK KR", "Nanum Myeongjo", serif;
+}
+
+body {
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  color: var(--body);
+  background: #ffffff;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  font-size: 12px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+.page {
+  width: 210mm;
+  height: 297mm;
+  padding: 12mm;
+  overflow: hidden;
+}
+
+/* Double-rule certificate frame */
+.frame {
+  position: relative;
+  height: 100%;
+  border: 1.4px solid var(--ink);
+  outline: 0.6px solid var(--ink);
+  outline-offset: -5px;
+  padding: 16mm 17mm 14mm;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.watermark {
+  position: absolute;
+  width: 120mm;
+  height: 120mm;
+  left: 50%;
+  top: 52%;
+  transform: translate(-50%, -50%);
+  fill: #000000;
+  opacity: 0.02;
+  pointer-events: none;
+}
+
+/* Header */
+.header {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.logo-svg {
+  height: 22px;
+  width: auto;
+  display: block;
+}
+
+.brand-sub {
+  margin-top: 4px;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  color: #555555;
+}
+
+.doc-meta {
+  text-align: right;
+}
+
+.doc-meta-label {
+  font-size: 7.5px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.doc-meta-value {
+  margin-top: 2px;
+  font-size: 9.5px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: 0.04em;
+}
+
+/* Title */
+.title-block {
+  position: relative;
+  margin: 12mm 0 11mm;
+  text-align: center;
+}
+
+.eyebrow {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-size: 15px;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+}
+
+.doc-title {
+  margin-top: 6px;
+  font-family: var(--serif);
+  font-size: 40px;
+  font-weight: 900;
+  letter-spacing: 0.42em;
+  margin-right: -0.42em; /* balance trailing letter-spacing so the title stays centered */
+  color: var(--ink);
+}
+
+.title-rule {
+  margin: 14px auto 0;
+  width: 46mm;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title-rule::before,
+.title-rule::after {
+  content: "";
+  flex: 1;
+  height: 0.8px;
+  background: var(--ink);
+}
+
+.title-rule span {
+  width: 5px;
+  height: 5px;
+  background: var(--accent);
+  transform: rotate(45deg);
+}
+
+/* Information groups */
+.info {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 7mm;
+}
+
+.group-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding-bottom: 7px;
+  border-bottom: 1.4px solid var(--ink);
+}
+
+.group-index {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+}
+
+.group-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: 0.06em;
+}
+
+.group-en {
+  margin-left: auto;
+  font-size: 7.5px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 40mm 1fr;
+  align-items: center;
+  min-height: 10mm;
+  border-bottom: 0.6px solid var(--hair);
+}
+
+.row dt {
+  display: flex;
+  flex-direction: column;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #555555;
+}
+
+.row dt small {
+  margin-top: 1px;
+  font-size: 7px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #b0aea8;
+}
+
+.row dd {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.row dd.strong {
+  font-size: 14.5px;
+  font-weight: 700;
+}
+
+.row dd .sub {
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* Statement */
+.statement {
+  position: relative;
+  margin-top: auto;
+  padding-top: 12mm;
+  text-align: center;
+}
+
+.statement p {
+  font-family: var(--serif);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 0.03em;
+}
+
+.issue-date {
+  margin-top: 7mm;
+  font-family: var(--serif);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: var(--body);
+}
+
+/* Issuer */
+.issuer {
+  position: relative;
+  margin-top: 11mm;
+  text-align: center;
+}
+
+.issuer-company {
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  color: var(--ink);
+}
+
+.issuer-sign {
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ceo-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: #555555;
+}
+
+.ceo-name {
+  font-family: var(--serif);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  color: var(--ink);
+}
+
+.seal-slot {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+}
+
+.seal-mark {
+  font-size: 12px;
+  color: #666666;
+}
+
+.seal-img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 21mm;
+  height: 21mm;
+  object-fit: contain;
+  transform: translate(-50%, -50%) rotate(-4deg);
+  mix-blend-mode: multiply;
+}
+
+.issuer-meta {
+  margin-top: 9mm;
+  padding-top: 5mm;
+  border-top: 0.6px solid var(--hair);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+.issuer-meta b {
+  font-weight: 600;
+  color: #555555;
+}
+
+.issuer-meta .dot {
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: #bbbbbb;
+}

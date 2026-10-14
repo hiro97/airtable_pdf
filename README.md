@@ -73,6 +73,37 @@ await fetch(serverUrl, {
    - **발주서**: `"https://your-domain.com/generate/po?record_id=" & RECORD_ID()`
 4. 버튼을 클릭하면 브라우저 창에서 진행 상태가 표시된 후 3초 뒤 자동 닫히며, 지정된 첨부파일 필드(예: `Paystub`, `PO Created`)에 PDF가 자동 업로드됩니다.
 
+### 📄 재직증명서 (직원 연봉-세금표 → `Signed Agreement`)
+`재직증명서 생성` 버튼(Action: **Run script**)에 아래 스크립트를 넣습니다. 생성된 PDF는 `Signed Agreement`의 기존 파일을 유지한 채 **추가**됩니다.
+
+```javascript
+const SERVER_URL = "https://your-domain.com/webhook/employment";
+const WEBHOOK_SECRET = ""; // 서버에 WEBHOOK_SECRET을 설정했다면 같은 값
+
+const table = base.getTable("직원 연봉-세금표");
+const record = await input.recordAsync("직원을 선택하세요", table);
+
+if (!record) {
+    output.text("선택된 직원이 없습니다.");
+} else {
+    const headers = { "Content-Type": "application/json" };
+    if (WEBHOOK_SECRET) headers["x-webhook-secret"] = WEBHOOK_SECRET;
+
+    // remoteFetchAsync: Airtable 서버를 경유하므로 CORS / http 혼합 콘텐츠 제약이 없음
+    const res = await remoteFetchAsync(SERVER_URL, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ record_id: record.id }),
+    });
+
+    if (res.ok) {
+        output.markdown(`✅ **${record.name}** 재직증명서 생성 요청 완료. 잠시 후 Signed Agreement에 추가됩니다.`);
+    } else {
+        output.markdown(`❌ 생성 요청 실패 (${res.status}): ${await res.text()}`);
+    }
+}
+```
+
 ---
 
 ## 🧩 3. 나중에 새로운 PDF 문서 추가하는 방법 (Extending New PDFs)
