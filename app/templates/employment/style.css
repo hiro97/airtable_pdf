@@ -60,13 +60,18 @@ body {
 .watermark {
   position: absolute;
   width: 120mm;
-  height: 120mm;
   left: 50%;
-  top: 52%;
+  top: 56%;
   transform: translate(-50%, -50%);
-  fill: #000000;
-  opacity: 0.02;
+  opacity: 0.025;
   pointer-events: none;
+}
+
+.watermark svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  fill: #000000;
 }
 
 /* Header */
@@ -77,14 +82,26 @@ body {
   align-items: flex-start;
 }
 
-.logo-svg {
-  height: 22px;
-  width: auto;
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo svg {
   display: block;
+  height: 20px;
+  width: auto;
+  fill: #000000;
+}
+
+.brand-divider {
+  width: 0.8px;
+  height: 18px;
+  background: #c8c6c0;
 }
 
 .brand-sub {
-  margin-top: 4px;
   font-size: 7px;
   font-weight: 700;
   letter-spacing: 0.24em;
@@ -351,4 +368,18 @@ body {
   height: 2px;
   border-radius: 50%;
   background: #bbbbbb;
+}
+
+.footer-logo svg {
+  display: block;
+  height: 22px;
+  width: auto;
+  fill: #141414;
+}
+
+.meta-divider {
+  width: 0.6px;
+  height: 18px;
+  background: var(--hair);
+  margin: 0 4px;
 }
