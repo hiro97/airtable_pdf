@@ -89,3 +89,42 @@ def test_custom_overtime_and_allowance_field_names_and_types():
     data2 = generator.transform_fields(fields2, "rec2")
     assert data2["earnings"][3]["note"] == "초과근무 8시간"
     assert data2["earnings"][3]["amount"] == 300000
+
+
+def test_real_airtable_overtime_and_payday_fields():
+    """Verify with actual Airtable payload containing 'Overtime (Time)', 'Overtime Amount', 'Payday', 'Holiday Bonus'"""
+    generator = PayslipGenerator()
+    fields = {
+        "Name_Month": "김소정 2025-09",
+        "Employee": ["recJpqWEqlb4sOya9"],
+        "기본급": [2925000],
+        "식대": [200000],
+        "Holiday Bonus": 300000,
+        "Payday": "2025-09-25",
+        "월급월": "2025-09",
+        "Overtime (Time)": 11,
+        "Overtime Amount": 246710.5263157895,
+        "Gros Pay": 3671710.5263157897,
+        "공제합계": 357980,
+        "차인지급액": 3313730.5263157897
+    }
+    data = generator.transform_fields(fields, "rec0BVPDFkpuihhJH")
+    html = PDFEngine("storage").render_html("payslip", "template.html", "style.css", data)
+
+    # Payday test
+    assert data["payment_date"] == "2025-09-25"
+    assert "2025-09-25" in html
+
+    # Overtime & Allowance test
+    assert data["earnings"][3]["name"] == "초과수당"
+    assert data["earnings"][3]["note"] == "초과근무 11시간"
+    assert data["earnings"][3]["amount"] == 246711
+    assert "초과근무 11시간" in html
+
+    # Holiday Bonus test
+    assert data["earnings"][4]["amount"] == 300000
+    assert "₩300,000" in html
+
+    # Total Earnings test
+    assert data["total_earnings_formatted"] == "₩3,671,711"
+    assert "₩3,671,711" in html

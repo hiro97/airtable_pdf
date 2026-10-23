@@ -125,7 +125,7 @@ class PayslipGenerator(BaseDocumentGenerator):
 
         # Dates
         period = self._extract_text(self._find_field_value(fields, ["귀속월", "귀속 월", "급여월", "월급월", "Period", "Month"]))
-        payment_date = self._extract_text(self._find_field_value(fields, ["지급일자", "지급일", "지급 일자", "월급지급날짜", "Payment Date", "Pay Date", "Date"]))
+        payment_date = self._extract_text(self._find_field_value(fields, ["Payday", "payday", "지급일자", "지급일", "지급 일자", "월급지급날짜", "Payment Date", "Pay Date", "Date"]))
 
         # Fallbacks for Name / Period from primary field
         if not period:
@@ -138,9 +138,10 @@ class PayslipGenerator(BaseDocumentGenerator):
         meal_allowance = self._extract_number(self._find_field_value(fields, ["식대", "식대보조금", "Meal"]))
         car_allowance = self._extract_number(self._find_field_value(fields, ["차량유지비", "차량보조금", "Car Allowance"]))
 
-        # Overtime / Allowances (초과수당 및 초과시간)
+        # Overtime / Allowances (초과수당 및 초과시간 - Airtable 필드명: 'Overtime Amount', 'Overtime (Time)')
         overtime_val = self._extract_number(
             self._find_field_value(fields, [
+                "Overtime Amount", "Overtime amount", "overtime_amount", "OT Amount",
                 "초과수당", "초과 수당", "초과근무수당", "초과근무 수당",
                 "연장수당", "연장 수당", "연장근로수당", "연장근로 수당", "연장근무수당", "연장근무 수당",
                 "수당", "수 당",
@@ -155,6 +156,7 @@ class PayslipGenerator(BaseDocumentGenerator):
 
         overtime_note = self._extract_text(self._find_field_value(fields, ["수당 비고", "수당내역", "비고"]))
         hours_value = self._find_field_value(fields, [
+            "Overtime (Time)", "Overtime(Time)", "Overtime Time",
             "초과시간", "초과 시간", "초과근무시간", "초과근무 시간", "초과근무",
             "연장시간", "연장 시간", "연장근로시간", "연장근로 시간", "연장근무시간", "연장근무 시간", "연장근로",
             "Overtime Hours", "OT Hours", "Overtime", "OT", "Overtime_Hours"
@@ -163,9 +165,14 @@ class PayslipGenerator(BaseDocumentGenerator):
         if parsed_hours is not None and parsed_hours > 0 and not overtime_note:
             overtime_note = f"초과근무 {parsed_hours:g}시간"
 
-        allowance_name = "초과수당" if any(k in fields for k in ["초과수당", "초과 수당", "초과근무수당"]) else "수당"
+        # 수당 항목 이름: 초과시간/초과수당 필드가 사용되었거나 시간이 있으면 '초과수당'으로 표기
+        allowance_name = "수당"
+        if any(k in fields for k in ["Overtime Amount", "Overtime (Time)", "초과수당", "초과 수당", "초과근무수당", "초과시간"]):
+            allowance_name = "초과수당"
+        elif overtime_val > 0 or parsed_hours:
+            allowance_name = "초과수당"
 
-        bonus = self._extract_number(self._find_field_value(fields, ["상여금", "상여", "Bonus"]))
+        bonus = self._extract_number(self._find_field_value(fields, ["Holiday Bonus", "Holiday bonus", "명절상여", "명절상여금", "상여금", "상여", "Bonus"]))
         health_checkup = self._extract_number(self._find_field_value(fields, ["검진지원비", "건강검진비", "검진비", "Medical Checkup"]))
 
         # Earnings List
@@ -179,9 +186,9 @@ class PayslipGenerator(BaseDocumentGenerator):
         ]
 
         # Total Earnings
-        calc_total_earnings = sum(item["amount"] for item in earnings)
-        given_total_earnings = self._extract_number(self._find_field_value(fields, ["지급합계", "총지급액", "Total Earnings"]))
-        total_earnings = given_total_earnings if given_total_earnings > 0 else calc_total_earnings
+        calc_total_earnings = sum(item["amount"] for item in earnings if item.get("amount"))
+        given_total_earnings = self._extract_number(self._find_field_value(fields, ["Gros Pay", "Gross Pay", "세전월급", "지급합계", "총지급액", "Total Earnings"]))
+        total_earnings = calc_total_earnings if calc_total_earnings > 0 else given_total_earnings
 
         # Deductions Items (공제 항목)
         national_pension = self._extract_number(self._find_field_value(fields, ["국민연금", "National Pension"]))
@@ -220,8 +227,8 @@ class PayslipGenerator(BaseDocumentGenerator):
         total_deductions = given_total_deductions if given_total_deductions > 0 else calc_total_deductions
 
         # Net Payable (실수령액)
-        given_net_pay = self._extract_number(self._find_field_value(fields, ["실수령액", "차인지급액", "실지급액", "Net Pay"]))
-        net_pay = given_net_pay if given_net_pay > 0 else (total_earnings - total_deductions)
+        given_net_pay = self._extract_number(self._find_field_value(fields, ["차인지급액", "실수령액", "Manual Transfer Amount", "실지급액", "Net Pay"]))
+        net_pay = (total_earnings - total_deductions) if total_earnings > 0 else given_net_pay
 
         return {
             "name": name,
