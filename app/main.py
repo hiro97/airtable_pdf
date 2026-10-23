@@ -76,10 +76,60 @@ def health_check():
     """Health check endpoint for Coolify monitoring"""
     return {
         "status": "healthy",
+        "version": "2.1.0-debug",
         "supported_documents": DocumentRegistry.list_types(),
         "storage_ready": storage_path.exists(),
         "base_url": settings.BASE_URL
     }
+
+@app.get("/debug/payslip")
+async def debug_payslip_recent():
+    """Debug endpoint to inspect exact Airtable field names and values for recent payslips"""
+    generator = DocumentRegistry.get("payslip")
+    if not generator.table:
+        return {"error": "Airtable client not configured"}
+    try:
+        records = generator.table.all(max_records=5)
+        summary = []
+        for r in records:
+            f = r.get("fields", {})
+            summary.append({
+                "id": r.get("id"),
+                "name": f.get("Name") or f.get("Name_Month") or f.get("성명"),
+                "all_keys": list(f.keys()),
+                "fields": f
+            })
+        return {"count": len(summary), "records": summary}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/debug/payslip/{record_id}")
+async def debug_payslip_record(record_id: str):
+    """Debug endpoint to inspect raw and transformed fields for a specific record"""
+    generator = DocumentRegistry.get("payslip")
+    if not generator.table:
+        return {"error": "Airtable client not configured"}
+    try:
+        record = generator.table.get(record_id)
+        fields = record.get("fields", {})
+        employee_fields = {}
+        employee_ids = fields.get("Employee") or []
+        if employee_ids and generator.employee_table:
+            try:
+                employee_fields = generator.employee_table.get(employee_ids[0]).get("fields", {})
+            except Exception as e:
+                employee_fields = {"error": str(e)}
+        transformed = generator.transform_fields(fields, record_id, employee_fields)
+        return {
+            "record_id": record_id,
+            "all_field_names": list(fields.keys()),
+            "raw_fields": fields,
+            "employee_field_names": list(employee_fields.keys()),
+            "employee_fields": employee_fields,
+            "transformed": transformed
+        }
+    except Exception as e:
+        return {"error": str(e)}
 
 @app.post("/webhook/generate-po")
 async def generate_po_legacy_webhook(
