@@ -64,3 +64,28 @@ def test_fetch_data_uses_linked_employee_record():
 def test_no_overtime_does_not_show_hours():
     data = PayslipGenerator().transform_fields({"수당": 10000, "Overtime": 0})
     assert data["earnings"][3]["note"] == ""
+
+
+def test_custom_overtime_and_allowance_field_names_and_types():
+    generator = PayslipGenerator()
+
+    # Case 1: '초과수당' and '초과시간' as numbers/lists
+    fields1 = {
+        "초과수당": [650000],
+        "초과시간": [12.5],
+        "Name": "홍길동"
+    }
+    data1 = generator.transform_fields(fields1, "rec1")
+    assert data1["earnings"][3]["name"] == "초과수당"
+    assert data1["earnings"][3]["amount"] == 650000
+    assert data1["earnings"][3]["note"] == "초과근무 12.5시간"
+
+    # Case 2: '초과시간' as string with unit
+    fields2 = {
+        "초과수당": 300000,
+        "초과시간": "8시간",
+        "Name": "홍길동"
+    }
+    data2 = generator.transform_fields(fields2, "rec2")
+    assert data2["earnings"][3]["note"] == "초과근무 8시간"
+    assert data2["earnings"][3]["amount"] == 300000

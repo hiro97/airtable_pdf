@@ -43,6 +43,10 @@ class PayslipGenerator(BaseDocumentGenerator):
     def _extract_number(self, val: Any) -> int:
         if val is None or val == "":
             return 0
+        if isinstance(val, list):
+            val = val[0] if len(val) > 0 else 0
+            if val is None or val == "":
+                return 0
         if isinstance(val, (int, float)):
             return int(round(val))
         clean_str = re.sub(r'[^0-9.-]', '', str(val))
@@ -50,6 +54,24 @@ class PayslipGenerator(BaseDocumentGenerator):
             return int(round(float(clean_str)))
         except ValueError:
             return 0
+
+    def _extract_hours(self, val: Any) -> Optional[float]:
+        """Extract hours float safely handling lists, strings with units, etc."""
+        if val is None or val == "":
+            return None
+        if isinstance(val, list):
+            val = val[0] if len(val) > 0 else None
+            if val is None or val == "":
+                return None
+        if isinstance(val, (int, float)):
+            return float(val)
+        clean_match = re.search(r'[-+]?\d*\.?\d+', str(val))
+        if clean_match:
+            try:
+                return float(clean_match.group(0))
+            except ValueError:
+                return None
+        return None
 
     def _extract_text(self, val: Any) -> str:
         if val is None:
@@ -116,17 +138,32 @@ class PayslipGenerator(BaseDocumentGenerator):
         meal_allowance = self._extract_number(self._find_field_value(fields, ["식대", "식대보조금", "Meal"]))
         car_allowance = self._extract_number(self._find_field_value(fields, ["차량유지비", "차량보조금", "Car Allowance"]))
 
-        # Overtime / Allowances
-        overtime_val = self._extract_number(self._find_field_value(fields, ["수당", "연장수당", "연장근로수당", "연장근로", "Overtime"]))
-        overtime_note = self._extract_text(self._find_field_value(fields, ["수당 비고", "수당내역"]))
-        hours_value = self._find_field_value(fields, ["Overtime", "초과근무시간", "연장근로시간"])
-        if hours_value is not None and not overtime_note:
-            try:
-                hours = float(hours_value)
-                if hours > 0:
-                    overtime_note = f"초과근무 {hours:g}시간"
-            except (TypeError, ValueError):
-                pass
+        # Overtime / Allowances (초과수당 및 초과시간)
+        overtime_val = self._extract_number(
+            self._find_field_value(fields, [
+                "초과수당", "초과 수당", "초과근무수당", "초과근무 수당",
+                "연장수당", "연장 수당", "연장근로수당", "연장근로 수당", "연장근무수당", "연장근무 수당",
+                "수당", "수 당",
+                "Overtime Pay", "Overtime Allowance", "OT Pay"
+            ])
+        )
+        if overtime_val == 0:
+            # Overtime 필드에 1000원 이상의 금액이 들어가 있는 경우 fallback 처리
+            ot_cand = self._extract_number(self._find_field_value(fields, ["Overtime"]))
+            if ot_cand >= 1000:
+                overtime_val = ot_cand
+
+        overtime_note = self._extract_text(self._find_field_value(fields, ["수당 비고", "수당내역", "비고"]))
+        hours_value = self._find_field_value(fields, [
+            "초과시간", "초과 시간", "초과근무시간", "초과근무 시간", "초과근무",
+            "연장시간", "연장 시간", "연장근로시간", "연장근로 시간", "연장근무시간", "연장근무 시간", "연장근로",
+            "Overtime Hours", "OT Hours", "Overtime", "OT", "Overtime_Hours"
+        ])
+        parsed_hours = self._extract_hours(hours_value)
+        if parsed_hours is not None and parsed_hours > 0 and not overtime_note:
+            overtime_note = f"초과근무 {parsed_hours:g}시간"
+
+        allowance_name = "초과수당" if any(k in fields for k in ["초과수당", "초과 수당", "초과근무수당"]) else "수당"
 
         bonus = self._extract_number(self._find_field_value(fields, ["상여금", "상여", "Bonus"]))
         health_checkup = self._extract_number(self._find_field_value(fields, ["검진지원비", "건강검진비", "검진비", "Medical Checkup"]))
@@ -136,7 +173,7 @@ class PayslipGenerator(BaseDocumentGenerator):
             {"name": "기본급", "note": "", "amount": base_salary, "amount_formatted": self._format_krw(base_salary)},
             {"name": "식대", "note": "", "amount": meal_allowance, "amount_formatted": self._format_krw(meal_allowance)},
             {"name": "차량유지비", "note": "", "amount": car_allowance, "amount_formatted": self._format_krw(car_allowance)},
-            {"name": "수당", "note": overtime_note, "amount": overtime_val, "amount_formatted": self._format_krw(overtime_val)},
+            {"name": allowance_name, "note": overtime_note, "amount": overtime_val, "amount_formatted": self._format_krw(overtime_val)},
             {"name": "상여금", "note": "", "amount": bonus, "amount_formatted": self._format_krw(bonus)},
             {"name": "검진지원비", "note": "", "amount": health_checkup, "amount_formatted": self._format_krw(health_checkup)},
         ]

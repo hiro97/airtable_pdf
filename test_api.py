@@ -13,6 +13,11 @@ def test_health():
     print("Health check passed, supported docs:", data["supported_documents"])
 
 def test_download_file():
+    from pathlib import Path
+    dummy_pdf = Path("storage/ZOO_Korea_김애정_2026-07.pdf")
+    dummy_pdf.parent.mkdir(parents=True, exist_ok=True)
+    if not dummy_pdf.exists():
+        dummy_pdf.write_bytes(b"%PDF-1.4 mock pdf content")
     response = client.get("/files/download/ZOO_Korea_김애정_2026-07.pdf")
     assert response.status_code == 200
     assert response.headers["content-type"] == "application/pdf"
